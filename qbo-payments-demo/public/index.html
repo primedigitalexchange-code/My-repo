@@ -1,0 +1,71 @@
+<!-- public/index.html - Sandbox demo only -->
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>QuickBooks Payments Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 2rem auto; }
+    label, input { display:block; margin: 0.5rem 0; width:100%; }
+  </style>
+</head>
+<body>
+  <h1>QuickBooks Payments — Demo (Sandbox)</h1>
+
+  <h2>1) Connect to QuickBooks</h2>
+  <p><a href="/auth/connect" target="_blank">Connect QuickBooks Company (OAuth)</a></p>
+
+  <h2>2) Create a one-time charge (test)</h2>
+  <p>Note: This demo sends raw card details to the server — sandbox ONLY. Replace with client-side tokenization for production.</p>
+  <form id="payForm">
+    <label>Amount (in cents)</label>
+    <input id="amount" value="1000" />
+
+    <label>Card number</label>
+    <input id="number" value="4111111111111111" />
+
+    <label>Exp month</label>
+    <input id="expMonth" value="12" />
+
+    <label>Exp year</label>
+    <input id="expYear" value="2028" />
+
+    <label>CVC</label>
+    <input id="cvc" value="123" />
+
+    <label>Customer name</label>
+    <input id="custName" value="Demo Customer" />
+
+    <button type="submit">Charge</button>
+  </form>
+
+  <pre id="out"></pre>
+
+  <script>
+    const out = document.getElementById('out');
+    document.getElementById('payForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        amount: parseInt(document.getElementById('amount').value, 10),
+        currency: 'USD',
+        card: {
+          number: document.getElementById('number').value,
+          expMonth: document.getElementById('expMonth').value,
+          expYear: document.getElementById('expYear').value,
+          cvc: document.getElementById('cvc').value
+        },
+        customer: { id: 'demo-cust-1', name: document.getElementById('custName').value }
+      };
+
+      out.textContent = 'Processing...';
+      const resp = await fetch('/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await resp.json();
+      out.textContent = JSON.stringify(data, null, 2);
+    });
+  </script>
+</body>
+</html>
